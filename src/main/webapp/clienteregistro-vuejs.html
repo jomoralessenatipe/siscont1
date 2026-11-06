@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Mantenimiento de Clientes</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        form { margin-bottom: 20px; padding: 15px; border: 1px solid #ccc; width: 300px; }
+        input { display: block; margin-bottom: 10px; width: 100%; padding: 5px; }
+        table { border-collapse: collapse; width: 50%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        button { cursor: pointer; padding: 5px 10px; margin-right: 5px; }
+    </style>
+    <!-- 1. Importar Vue 3 desde el CDN -->
+	<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+<body>
+
+    <!-- 2. Contenedor principal de la app de Vue -->
+    <div id="app_usu">
+        <h2>Mantenimiento de Clientes</h2>
+
+        <!-- Formulario -->
+        <form @submit.prevent="guardarCliente">
+            <label for="tipoDocumento">Tipo Documento:</label>
+            <input type="text" v-model="form.tipoDocumento" required>
+            
+            <label for="numeroDocumento">Número Documento:</label>
+            <input type="text" v-model="form.numeroDocumento" required>
+            
+            <label for="nombreRazonSocial">Nombre / Razón Socia:</label>
+            <input type="text" v-model="form.nombreRazonSocial" required>
+            
+            <label for="direccion">Dirección:</label>
+            <input type="text" v-model="form.direccion" required>
+            
+            <label for="telefono">Teléfono:</label>
+            <input type="text" v-model="form.telefono" required>
+            
+            <label for="correo">Correo:</label>
+            <input type="text" v-model="form.correo" required>
+            
+            <label for="fechaIngreso">Fecha de Ingreso:</label>
+            <input type="text" v-model="form.fechaIngreso" required>
+            
+            <label for="categoria">Categoría:</label>
+            <input type="text" v-model="form.categoria" required>
+            
+            <button type="submit">Guardar</button>
+            <button type="button" v-if="form.id" @click="limpiarFormulario">Cancelar</button>
+        </form>
+
+        <!-- Tabla -->
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Tip.Doc.</th>
+                    <th>Num.Doc.</th>
+                    <th>Nombre/Raz.Soc.</th>
+                    <th>direccion</th>
+                    <th>telefono</th>
+                    <th>correo</th>
+                    <th>Fec.Ing.</th>
+                    <th>Cat.</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Directiva v-for para renderizar la lista dinámicamente -->
+                <tr v-for="u in clientes" :key="u.id">
+                    <td>{{ u.id }}</td>
+                    <td>{{ u.tipoDocumento }}</td>
+                    <td>{{ u.numeroDocumento }}</td>
+                    <td>{{ u.nombreRazonSocial }}</td>
+                    <td>{{ u.direccion }}</td>
+                    <td>{{ u.telefono }}</td>
+                    <td>{{ u.correo }}</td>
+                    <td>{{ u.fechaIngreso }}</td>
+                    <td>{{ u.categoria }}</td>
+                    <td>{{ u.estado }}</td>
+                    <td>
+                        <button @click="editarCliente(u)">Editar</button>
+                        <!-- <button @click="eliminarUsuario(u.id)">Eliminar</button> -->
+                    </td>
+                </tr>
+                <tr v-if="clientes.length === 0">
+                    <td colspan="3" style="text-align: center;">No hay usuarios registrados.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        const { createApp, ref, onMounted } = Vue;
+
+        createApp({
+            setup() {
+                const API_URL = 'ClienteAjaxJsonServlet';
+                
+                // Estados de la aplicación
+                const clientes = ref([]);
+                const form = ref({
+                    id: null,
+                    tipoDocumento: '',
+                    numeroDocumento: '',
+                    nombreRazonSocial: '',
+                    direccion: '',
+                    telefono: '',
+                    correo: '',
+                    fechaIngreso: '',
+                    categoria: '',
+                    estado: ''
+                });
+
+                // 1. LISTAR (GET)
+                const listarClientes = () => {
+                    fetch(API_URL)
+                        .then(res => res.json())
+                        .then(data => {
+                            clientes.value = data;
+                        })
+                        .catch(err => console.error("Error al listar:", err));
+                };
+
+                // 2. CREAR / ACTUALIZAR (POST)
+                const guardarCliente = () => {
+                    const datos = { 
+                        tipoDocumento: form.value.tipoDocumento, 
+                        numeroDocumento: form.value.numeroDocumento,
+                        nombreRazonSocial: form.value.nombreRazonSocial,
+                        direccion: form.value.direccion,
+                        telefono: form.value.telefono,
+                        correo: form.value.correo,
+                        fechaIngreso: form.value.fechaIngreso,
+                        categoria: form.value.categoria,
+                        estado: form.value.estado
+                    };
+                    
+                    if (form.value.id) {
+                        datos.id = parseInt(form.value.id);
+                    }
+
+                    fetch(API_URL, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(datos)
+                    })
+                    .then(res => res.json())
+                    .then(respuesta => {
+                        alert(respuesta.mensaje);
+                        limpiarFormulario();
+                        listarClientes();
+                    })
+                    .catch(err => console.error("Error al guardar:", err));
+                };
+
+                // Control del formulario
+                const editarCliente = (cliente) => {
+                    form.value.id = cliente.id;
+                    form.value.tipoDocumento = cliente.tipoDocumento;
+                    form.value.numeroDocumento = cliente.numeroDocumento;
+                    form.value.nombreRazonSocial = cliente.nombreRazonSocial;
+                    form.value.direccion = cliente.direccion;
+                    form.value.telefono = cliente.telefono;
+                    form.value.correo = cliente.correo;
+                    form.value.fechaIngreso = cliente.fechaIngreso;
+                    form.value.categoria = cliente.categoria;
+                    form.value.estado = cliente.estado;
+                };
+
+                const limpiarFormulario = () => {
+                    form.value.id = null;
+                    form.value.tipoDocumento = '';
+                    form.value.numeroDocumento = '';
+                    form.value.nombreRazonSocial = '';
+                    form.value.direccion = '';
+                    form.value.telefono = '';
+                    form.value.correo = '';
+                    form.value.fechaIngreso = '';
+                    form.value.cateogria = '';
+                    form.value.estado = '';
+                };
+
+                // Hook equivalente a DOMContentLoaded
+                onMounted(() => {
+                    listarClientes();
+                });
+
+                return {
+                    clientes,
+                    form,
+                    guardarCliente,
+                    editarCliente,
+                    limpiarFormulario
+                };
+            }
+        }).mount('#app_usu');
+    </script>
+</body>
+</html>

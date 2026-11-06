@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Mantenimiento de Productos</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        form { margin-bottom: 20px; padding: 15px; border: 1px solid #ccc; width: 300px; }
+        input { display: block; margin-bottom: 10px; width: 100%; padding: 5px; }
+        table { border-collapse: collapse; width: 50%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        button { cursor: pointer; padding: 5px 10px; margin-right: 5px; }
+    </style>
+    <!-- 1. Importar Vue 3 desde el CDN -->
+	<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+<body>
+
+    <!-- 2. Contenedor principal de la app de Vue -->
+    <div id="app_usu">
+        <h2>Mantenimiento de Productos</h2>
+
+        <!-- Formulario -->
+        <form @submit.prevent="guardar">
+            <label for="nombre">Nombre:</label>
+            <input type="text" v-model="form.nombre" required>
+            
+            <label for="proveedorId">Proveedor ID:</label>
+            <input type="number" v-model.number="form.proveedorId" required>
+            
+            <label for="tipoProducto">Tipo de Producto:</label>
+            <input type="text" v-model="form.tipoProducto" :required="!form.id">
+            
+            <label for="stockMinimo">Stock Minimo:</label>
+            <input type="number" v-model.number="form.stockMinimo" :required="!form.id">
+            
+            <label for="stockMaximo">Stock Maximo:</label>
+            <input type="number" v-model.number="form.stockMaximo" :required="!form.id">
+            
+            <button type="submit">Guardar</button>
+            <button type="button" v-if="form.id" @click="limpiarFormulario">Cancelar</button>
+        </form>
+
+        <!-- Tabla -->
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre Producto</th>
+                    <th>Proveedor ID</th>
+                    <th>Tipo de Producto</th>
+                    <th>Stock Mínimo</th>
+                    <th>Stock Máximo</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Directiva v-for para renderizar la lista dinámicamente -->
+                <tr v-for="u in productos" :key="u.id">
+                    <td>{{ u.id }}</td>
+                    <td>{{ u.nombre }}</td>
+                    <td>{{ u.proveedorId }}</td>
+                    <td>{{ u.tipoProducto }}</td>
+                    <td>{{ u.stockMinimo }}</td>
+                    <td>{{ u.stockMaximo }}</td>
+                    <td>
+                        <button @click="editar(u)">Editar</button>
+                        <!-- <button @click="eliminar(u.id)">Eliminar</button> -->
+                    </td>
+                </tr>
+                <tr v-if="productos.length === 0">
+                    <td colspan="3" style="text-align: center;">No hay registros.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        const { createApp, ref, onMounted } = Vue;
+
+        createApp({
+            setup() {
+                const API_URL = 'ProveedorJpaServlet';
+                
+                // Estados de la aplicación
+                const productos = ref([]);
+                const form = ref({
+                    id: null,
+                    ruc: '',
+                    razonSocial: '',
+                    telefono: '',
+                    direccion: '',
+                    distritoId: 0,
+                    provinciaId: 0,
+                    departamentoId: 0
+                });
+
+                // 1. LISTAR (GET)
+                const listar = () => {
+                    fetch(API_URL)
+                        .then(res => res.json())
+                        .then(data => {
+                            productos.value = data;
+                        })
+                        .catch(err => console.error("Error al listar:", err));
+                };
+
+                // 2. CREAR / ACTUALIZAR (POST)
+                const guardar = () => {
+                    const datos = { 
+                        ruc            : form.value.ruc, 
+                        razonSocial    : form.value.razonSocial, 
+                        telefono       : form.value.telefono, 
+                        direccion      : form.value.direccion, 
+                        distritoId     : Number(form.value.distritoId), 
+                        provinciaId    : Number(form.value.provinciaId), 
+                        departamentoId : Number(form.value.departamentoId) 
+                    };
+                    console.error("form.value.id: " + form.value.id)
+                    if (form.value.id) {
+                        // datos.id = parseInt(form.value.id);
+                        datos.id = form.value.id;
+                    }
+
+                    fetch(API_URL, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify(datos)
+                    })
+                    .then(async res => {
+                        const respuesta = await res.json();
+
+                        if (!res.ok) {
+                            throw new Error(
+                                respuesta.error || `Error HTTP ${res.status}`
+                            );
+                        }
+
+                        return respuesta;
+                    })
+                    .then(respuesta => {
+                        alert(respuesta.mensaje || "Operación realizada correctamente");
+                        limpiarFormulario();
+                        listar();
+                    })
+                    .catch(err => {
+                        console.error("Error al guardar el proveedor:", err);
+                        alert("No se pudo guardar el proveedor: " + err.message);
+                    });
+                };
+                // 3. ELIMINAR (DELETE)
+                const eliminar = (id) => {
+                    if (!confirm("¿Seguro de eliminar este registro?")) return;
+
+                    fetch(`${API_URL}?id=${id}`, { method: "DELETE" })
+                        .then(res => res.json())
+                        .then(respuesta => {
+                            alert(respuesta.mensaje);
+                            listar();
+                        })
+                        .catch(err => console.error("Error al eliminar:", err));
+                };
+
+                // Control del formulario
+                const editar = (registro) => {
+                    form.value.id = registro.id;
+                    form.value.ruc = registro.ruc;
+                    form.value.razonSocial = registro.razonSocial;
+                    form.value.telefono = registro.telefono;
+                    form.value.direccion = registro.direccion;
+                    form.value.distritoId = registro.distritoId;
+                    form.value.provinciaId = registro.provinciaId;
+                    form.value.departamentoId = registro.departamentoId;
+                };
+
+                const limpiarFormulario = () => {
+                    form.value = { id: null, ruc: '', razonSocial: '', telefono:'', direccion:'', distritoId:0, provinciaId:0, departamentoId:0 };
+                };
+
+                // Hook equivalente a DOMContentLoaded
+                onMounted(() => {
+                    listar();
+                });
+
+                return {
+                    productos,
+                    form,
+                    guardar,
+                    eliminar,
+                    editar,
+                    limpiarFormulario
+                };
+            }
+        }).mount('#app_usu');
+    </script>
+</body>
+</html>

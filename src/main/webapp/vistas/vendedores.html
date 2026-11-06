@@ -1,0 +1,106 @@
+
+<section id="modulo-Vendedores">
+
+    <h2>Mantenimiento de Vendedores</h2>
+    <p class="subtitulo">Registro, consulta y actualización de Vendedores.</p>
+
+    <div class="tarjeta">
+        <h3>{{ form.id ? 'Editar Vendedor' : 'Registrar Vendedor' }}</h3>
+
+        <form @submit.prevent="guardar">
+
+            <div class="form-grid">
+
+                <div class="campo">
+                    <label>Nombre</label>
+                    <input type="text" v-model.trim="form.nombre" required>
+                </div>
+
+                <div class="campo">
+                    <label>Tipo de Vendedor</label>
+                    <input type="text" v-model.trim="form.tipoVendedor" required>
+                </div>
+
+                <div class="campo">
+                    <label>Tipo de Documento</label>
+                    <input type="text" v-model.trim="form.tipoDocumento" required>
+                </div>
+
+                <div class="campo">
+                    <label>Número de Documento</label>
+                    <input type="text" v-model.trim="form.numeroDocumento" required>
+                </div>
+
+                <div class="campo">
+                    <label>Teléfono</label>
+                    <input type="text" v-model.trim="form.telefono" required>
+                </div>
+
+                <div class="campo">
+                    <label>Porcentaje de Comisión</label>
+                    <input type="number" min="1.00" max="100.00" step="0.01"
+                           v-model.number="form.porcentajeComision" required>
+                </div>
+
+            </div>
+
+            <div class="acciones">
+                <button type="submit" class="btn-guardar" :disabled="guardando">
+                    {{ guardando ? 'Guardando...' : (form.id ? 'Actualizar' : 'Registrar') }}
+                </button>
+
+                <button type="button" class="btn-limpiar" @click="limpiarFormulario">
+                    Limpiar
+                </button>
+            </div>
+
+        </form>
+    </div>
+
+    <div class="tarjeta">
+        <h3>Listado de Vendedores</h3>
+
+        <p v-if="cargando">Consultando Vendedores...</p>
+
+        <div class="tabla-contenedor" v-else>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Tipo de Vendedor</th>
+                        <th>Tipo de Documento</th>
+                        <th>Número de Documento</th>
+                        <th>Teléfono</th>
+                        <th>% Comisión</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr v-for="registro in vendedores" :key="registro.id">
+                        <td>{{ registro.id }}</td>
+                        <td>{{ registro.nombre }}</td>
+                        <td style="text-align: center;">{{ registro.tipoVendedor }}</td>
+                        <td style="text-align: center;">{{ registro.tipoDocumento }}</td>
+                        <td style="text-align: center;">{{ registro.numeroDocumento }}</td>
+                        <td>{{ registro.telefono }}</td>
+                        <td style="text-align: right;">{{ registro.porcentajeComision }}</td>
+                        <td style="text-align: right;">
+                            <button type="button"
+                                    class="btn-editar"
+                                    @click="editar(registro)">
+                                Editar
+                            </button>
+                        </td>
+                    </tr>
+
+                    <tr v-if="vendedores.length === 0">
+                        <td colspan="9">No hay Vendedores registrados.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</section>

@@ -1,0 +1,197 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Sistema de Gestión Empresarial</title>
+
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+
+<body>
+
+    <div id="app">
+
+        <!-- ================================== -->
+        <!-- ENCABEZADO SUPERIOR                -->
+        <!-- ================================== -->
+
+        <header class="barra-superior">
+
+            <div class="logo-empresa">
+                <img src="imagenes/logo.png" alt="Logo de la empresa">
+                <span>Sistema de Gestión</span>
+            </div>
+
+            <div class="datos-usuario">
+                <span class="texto-bienvenida">
+                    Bienvenido, <strong>{{ nombreUsuario }}</strong>
+                </span>
+
+                <button class="btn-cerrar-sesion" @click="cerrarSesion">
+                    <span>Cerrar sesión</span>
+                </button>
+            </div>
+
+        </header>
+
+
+        <!-- ================================== -->
+        <!-- CONTENEDOR PRINCIPAL               -->
+        <!-- ================================== -->
+
+        <div class="contenedor-principal">
+
+            <!-- MENÚ LATERAL -->
+
+            <aside class="menu-lateral">
+
+                <nav>
+
+                    <!-- MAESTROS -->
+
+                    <div class="grupo-menu">
+
+                        <div class="titulo-menu">
+                            <span>MAESTROS</span>
+                        </div>
+
+                        <button
+                            class="opcion-menu"
+                            :class="{ activo: moduloActual === 'usuarios' }"
+                            @click="cargarModulo('usuarios')">
+                            <span class="icono-menu">👤</span>
+                            Usuarios
+                        </button>
+
+                        <button
+                            class="opcion-menu"
+                            :class="{ activo: moduloActual === 'clientes' }"
+                            @click="cargarModulo('clientes')">
+                            <span class="icono-menu">👥</span>
+                            Clientes
+                        </button>
+
+                        <button
+                            class="opcion-menu"
+                            :class="{ activo: moduloActual === 'proveedores' }"
+                            @click="cargarModulo('proveedores')">
+                            <span class="icono-menu">🏢</span>
+                            Proveedores
+                        </button>
+
+                        <button
+                            class="opcion-menu"
+                            :class="{ activo: moduloActual === 'productos' }"
+                            @click="cargarModulo('productos')">
+                            <span class="icono-menu">📦</span>
+                            Productos
+                        </button>
+
+                        <button
+                            class="opcion-menu"
+                            :class="{ activo: moduloActual === 'vendedores' }"
+                            @click="cargarModulo('vendedores')">
+                            <span class="icono-menu">🧑‍💼</span>
+                            Vendedores
+                        </button>
+
+                    </div>
+
+
+                    <!-- ALMACÉN -->
+
+                    <div class="grupo-menu">
+
+                        <div class="titulo-menu">
+                            <span>ALMACÉN</span>
+                        </div>
+
+                        <button
+                            class="opcion-menu"
+                            :class="{ activo: moduloActual === 'stocks' }"
+                            @click="cargarModulo('stocks')">
+                            <span class="icono-menu">📊</span>
+                            Stocks
+                        </button>
+
+                        <button
+                            class="opcion-menu"
+                            :class="{ activo: moduloActual === 'kardex' }"
+                            @click="cargarModulo('kardex')">
+                            <span class="icono-menu">📋</span>
+                            Kardex
+                        </button>
+
+                    </div>
+
+
+                    <!-- VENTAS -->
+
+                    <div class="grupo-menu">
+
+                        <div class="titulo-menu">
+                            <span>VENTAS</span>
+                        </div>
+
+                        <button
+                            class="opcion-menu"
+                            :class="{ activo: moduloActual === 'ventas' }"
+                            @click="cargarModulo('ventas')">
+                            <span class="icono-menu">🛒</span>
+                            Registro de ventas
+                        </button>
+
+                    </div>
+
+                </nav>
+
+            </aside>
+
+
+            <!-- ================================== -->
+            <!-- CONTENIDO CENTRAL                  -->
+            <!-- ================================== -->
+
+            <main class="contenido-principal">
+
+                <div class="encabezado-modulo">
+                    <h2>{{ tituloModulo }}</h2>
+                </div>
+
+                <div v-if="cargando" class="mensaje-carga">
+                    <div class="indicador-carga"></div>
+                    <span>Cargando módulo...</span>
+                </div>
+
+                <div v-if="error" class="mensaje-error">
+                    {{ error }}
+                </div>
+
+                <!-- IMPORTANTE:
+                     Este contenedor permanece siempre en el DOM.
+                     Aquí se montan los módulos Vue. -->
+
+                <div ref="panelModulo" class="panel-modulo"></div>
+
+            </main>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================================== -->
+    <!-- LIBRERÍA VUE                       -->
+    <!-- ================================== -->
+
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <!-- APLICACIÓN PRINCIPAL -->
+
+    <script src="js/dashboard.js"></script>
+
+</body>
+</html>

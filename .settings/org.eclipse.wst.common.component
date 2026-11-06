@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?><project-modules id="moduleCoreId" project-version="1.5.0">
+            
+    
+    <wb-module deploy-name="siscont">
+                
+        <wb-resource deploy-path="/" source-path="/src/main/webapp" tag="defaultRootSource"/>
+                
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/java"/>
+                
+        <wb-resource deploy-path="/" source-path="/src/main/webapp/WEB-INF/lib"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/resources"/>
+        <dependent-module archiveName="jakarta.json-api-2.1.3.jar" deploy-path="/WEB-INF/lib" handle="module:/classpath/lib/siscont1/src/main/webapp/WEB-INF/lib/jakarta.json-api-2.1.3.jar">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+                        
+        
+        <property name="java-output-path" value="/siscont/build/classes"/>
+        <property name="context-root" value="siscont1"/>
+                    
+    
+    </wb-module>
+        
+
+</project-modules>

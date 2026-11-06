@@ -1,0 +1,78 @@
+<section id="modulo-productos">
+
+    <h2>Mantenimiento de Productos</h2>
+    <p class="subtitulo">Registro, consulta y actualización de Productos.</p>
+
+    <div class="tarjeta">
+        <h3>{{ form.id ? 'Editar producto' : 'Registrar producto' }}</h3>
+
+        <form @submit.prevent="guardar">
+            <label for="nombre">Nombre:</label>
+            <input type="text" v-model="form.nombre" required>
+            
+            <label for="proveedorId">Proveedor ID:</label>
+            <input type="number" v-model.number="form.proveedorId" required>
+            
+            <label for="tipoProducto">Tipo de Producto:</label>
+            <input type="text" v-model="form.tipoProducto" :required="!form.id">
+            
+            <label for="stockMinimo">Stock Minimo:</label>
+            <input type="number" v-model.number="form.stockMinimo" :required="!form.id">
+            
+            <label for="stockMaximo">Stock Maximo:</label>
+            <input type="number" v-model.number="form.stockMaximo" :required="!form.id">
+            
+            <div class="acciones">
+                <button type="submit" class="btn-guardar" :disabled="guardando">
+                    {{ guardando ? 'Guardando...' : (form.id ? 'Actualizar' : 'Registrar') }}
+                </button>
+
+                <button type="button" class="btn-limpiar" @click="limpiarFormulario">
+                    Limpiar
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="tarjeta">
+        <h3>Listado de productos</h3>
+
+        <p v-if="cargando">Consultando productos...</p>
+
+        <div class="tabla-contenedor" v-else>
+            <table>
+                <thead>
+                    <tr>
+	                    <th>ID</th>
+	                    <th>Nombre Producto</th>
+	                    <th>Proveedor ID</th>
+	                    <th>Tipo de Producto</th>
+	                    <th>Stock Mínimo</th>
+	                    <th>Stock Máximo</th>
+	                    <th>Acciones</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr v-for="registro in productos" :key="registro.id">
+	                    <td>{{ registro.id }}</td>
+	                    <td>{{ registro.nombre }}</td>
+	                    <td>{{ registro.proveedorId }}</td>
+	                    <td>{{ registro.tipoProducto }}</td>
+	                    <td>{{ registro.stockMinimo }}</td>
+	                    <td>{{ registro.stockMaximo }}</td>
+	                    <td>
+	                        <button class="btn-editar" @click="editar(registro)">Editar</button>
+	                        <!-- <button @click="eliminar(registro.id)">Eliminar</button> -->
+	                    </td>
+                    </tr>
+
+                    <tr v-if="productos.length === 0">
+                        <td colspan="9">No hay registros.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</section>

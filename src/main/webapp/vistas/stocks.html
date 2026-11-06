@@ -1,0 +1,198 @@
+<section id="modulo-stocks">
+
+    <h2>Mantenimiento de stocks</h2>
+
+    <p class="subtitulo">
+        Registro, consulta y actualización del stock de productos.
+    </p>
+
+
+    <!-- FORMULARIO -->
+    <div class="tarjeta">
+
+        <h3>
+            {{ form.id ? 'Editar stock' : 'Registrar stock' }}
+        </h3>
+
+        <form @submit.prevent="guardar">
+
+            <div class="form-grid">
+
+                <div class="campo">
+
+                    <label>ID producto</label>
+
+                    <input
+                        type="number"
+                        min="1"
+                        step="1"
+                        v-model.number="form.productoId"
+                        required>
+
+                </div>
+
+
+                <div class="campo">
+
+                    <label>Lote</label>
+
+                    <input
+                        type="text"
+                        v-model.trim="form.lote">
+
+                </div>
+
+
+                <div class="campo">
+
+                    <label>Fecha de vencimiento</label>
+
+                    <input
+                        type="date"
+                        v-model="form.fechaVencim">
+
+                </div>
+
+
+                <div class="campo">
+
+                    <label>Stock actual</label>
+
+                    <input
+                        type="number"
+                        min="0"
+                        step="1"
+                        v-model.number="form.stockActual"
+                        required>
+
+                </div>
+
+            </div>
+
+
+            <div class="acciones">
+
+                <button
+                    type="submit"
+                    class="btn-guardar"
+                    :disabled="guardando">
+
+                    {{
+                        guardando
+                            ? 'Guardando...'
+                            : (form.id ? 'Actualizar' : 'Registrar')
+                    }}
+
+                </button>
+
+
+                <button
+                    type="button"
+                    class="btn-limpiar"
+                    @click="limpiarFormulario">
+
+                    Limpiar
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+
+    <!-- LISTADO -->
+    <div class="tarjeta">
+
+        <h3>Listado de stocks</h3>
+
+        <p v-if="cargando">
+            Consultando stocks...
+        </p>
+
+
+        <div
+            class="tabla-contenedor"
+            v-else>
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>ID</th>
+                        <th>ID producto</th>
+                        <th>Lote</th>
+                        <th>Fecha vencimiento</th>
+                        <th>Stock actual</th>
+                        <th>Acciones</th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    <tr
+                        v-for="registro in stocks"
+                        :key="registro.id">
+
+                        <td>{{ registro.id }}</td>
+
+                        <td>
+                            {{ registro.productoId }}
+                        </td>
+
+                        <td>
+                            {{ registro.lote || '-' }}
+                        </td>
+
+                        <td>
+                            {{ registro.fechaVencim || '-' }}
+                        </td>
+
+                        <td>
+                            {{ registro.stockActual }}
+                        </td>
+
+
+                        <td>
+
+                            <button
+                                type="button"
+                                class="btn-editar"
+                                @click="editar(registro)">
+
+                                Editar
+
+                            </button>
+
+                        </td>
+
+                    </tr>
+
+
+                    <!-- MENSAJE CUANDO NO HAY REGISTROS -->
+
+                    <tr v-if="stocks.length === 0">
+
+                        <td colspan="6">
+
+                            No hay registros de stock.
+
+                        </td>
+
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</section>

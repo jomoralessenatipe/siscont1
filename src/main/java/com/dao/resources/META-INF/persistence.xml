@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="3.0" 
+             xmlns="https://jakarta.ee/xml/ns/persistence" 
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd"> 
+    
+    <!-- El name debe coincidir exactamente con el del EntityManagerFactory en tu DAO -->
+    <persistence-unit name="miPersistenciaPU" transaction-type="RESOURCE_LOCAL">
+        <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+        
+        <!-- Registramos la clase entidad -->
+        <class>com.jpa.UsuarioJpa</class>
+        
+        <properties>
+            <!-- Propiedades de Conexión a Base de Datos -->
+            <property name="jakarta.persistence.jdbc.driver" value="com.mysql.cj.jdbc.Driver"/>
+            <property name="jakarta.persistence.jdbc.url" value="jdbc:mysql://localhost:3308/mi_sistema?useSSL=false&amp;serverTimezone=UTC"/>
+            <property name="jakarta.persistence.jdbc.user" value="root"/>
+            <property name="jakarta.persistence.jdbc.password" value=""/>
+            
+            <!-- Propiedades de EclipseLink para desarrollo (Muestra el SQL ejecutado) -->
+            <property name="eclipselink.logging.level" value="FINE"/>
+        </properties>
+    </persistence-unit>
+    
+    <!-- 2. NUEVA UNIDAD DE PERSISTENCIA PARA ORACLE -->
+    <persistence-unit name="oraclePersistenciaPU" transaction-type="RESOURCE_LOCAL">
+        <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+        <class>com.jpa.ProveedorJpa</class>
+        <properties>
+            <property name="jakarta.persistence.jdbc.driver" value="oracle.jdbc.OracleDriver"/>
+            <property name="jakarta.persistence.jdbc.url" value="jdbc:oracle:thin:@db.freesql.com:1521/26ai_un3c1"/>
+            <property name="jakarta.persistence.jdbc.user" value="JOMORALES_SCHEMA_SJHSV"/>
+            <property name="jakarta.persistence.jdbc.password" value="SHB3UN2VD9TP!SSRZSHJOTS15d7LW4"/>
+            <property name="eclipselink.logging.level" value="FINE"/>
+        </properties>
+    </persistence-unit>
+
+</persistence>

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Mantenimiento de Usuarios</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        form { margin-bottom: 20px; padding: 15px; border: 1px solid #ccc; width: 300px; }
+        input { display: block; margin-bottom: 10px; width: 100%; padding: 5px; }
+        table { border-collapse: collapse; width: 50%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        button { cursor: pointer; padding: 5px 10px; margin-right: 5px; }
+    </style>
+    <!-- 1. Importar Vue 3 desde el CDN -->
+	<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+<body>
+
+    <!-- 2. Contenedor principal de la app de Vue -->
+    <div id="app_usu">
+        <h2>Mantenimiento de Usuarios</h2>
+
+        <!-- Formulario -->
+        <form @submit.prevent="guardarUsuario">
+            <label for="username">Usuario:</label>
+            <input type="text" v-model="form.usuario" required>
+            
+            <label for="password">Contraseña:</label>
+            <!-- La contraseña ya no es requerida obligatoriamente si se está editando -->
+            <input type="password" v-model="form.password" :required="!form.id">
+            
+            <button type="submit">Guardar</button>
+            <button type="button" v-if="form.id" @click="limpiarFormulario">Cancelar</button>
+        </form>
+
+        <!-- Tabla -->
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Usuario</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Directiva v-for para renderizar la lista dinámicamente -->
+                <tr v-for="u in usuarios" :key="u.id">
+                    <td>{{ u.id }}</td>
+                    <td>{{ u.usuario }}</td>
+                    <td>
+                        <button @click="editarUsuario(u)">Editar</button>
+                        <!-- <button @click="eliminarUsuario(u.id)">Eliminar</button> -->
+                    </td>
+                </tr>
+                <tr v-if="usuarios.length === 0">
+                    <td colspan="3" style="text-align: center;">No hay usuarios registrados.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        const { createApp, ref, onMounted } = Vue;
+
+        createApp({
+            setup() {
+                const API_URL = 'UsuarioJpaServlet';
+                
+                // Estados de la aplicación
+                const usuarios = ref([]);
+                const form = ref({
+                    id: null,
+                    usuario: '',
+                    password: ''
+                });
+
+                // 1. LISTAR (GET)
+                const listarUsuarios = () => {
+                    fetch(API_URL)
+                        .then(res => res.json())
+                        .then(data => {
+                            usuarios.value = data;
+                        })
+                        .catch(err => console.error("Error al listar:", err));
+                };
+
+                // 2. CREAR / ACTUALIZAR (POST)
+                const guardarUsuario = () => {
+                    const datos = { 
+                        usuario: form.value.usuario, 
+                        password: form.value.password 
+                    };
+                    
+                    if (form.value.id) {
+                        datos.id = parseInt(form.value.id);
+                    }
+
+                    fetch(API_URL, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(datos)
+                    })
+                    .then(res => res.json())
+                    .then(respuesta => {
+                        alert(respuesta.mensaje);
+                        limpiarFormulario();
+                        listarUsuarios();
+                    })
+                    .catch(err => console.error("Error al guardar:", err));
+                };
+
+                // 3. ELIMINAR (DELETE)
+                const eliminarUsuario = (id) => {
+                    if (!confirm("¿Seguro de eliminar este usuario?")) return;
+
+                    fetch(`${API_URL}?id=${id}`, { method: "DELETE" })
+                        .then(res => res.json())
+                        .then(respuesta => {
+                            alert(respuesta.mensaje);
+                            listarUsuarios();
+                        })
+                        .catch(err => console.error("Error al eliminar:", err));
+                };
+
+                // Control del formulario
+                const editarUsuario = (usuario) => {
+                    form.value.id = usuario.id;
+                    form.value.usuario = usuario.usuario;
+                    form.value.password = ""; // Por seguridad se limpia en el front
+                };
+
+                const limpiarFormulario = () => {
+                    form.value = { id: null, usuario: '', password: '' };
+                };
+
+                // Hook equivalente a DOMContentLoaded
+                onMounted(() => {
+                    listarUsuarios();
+                });
+
+                return {
+                    usuarios,
+                    form,
+                    guardarUsuario,
+                    eliminarUsuario,
+                    editarUsuario,
+                    limpiarFormulario
+                };
+            }
+        }).mount('#app_usu');
+    </script>
+</body>
+</html>

@@ -1,0 +1,269 @@
+
+/* =========================================
+   CONFIGURACIÓN GENERAL
+========================================= */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: #f3f5f9;
+    color: #333;
+}
+
+button {
+    font-family: inherit;
+    cursor: pointer;
+}
+
+
+/* =========================================
+   BARRA SUPERIOR
+========================================= */
+
+.barra-superior {
+    height: 65px;
+    background: #17365d;
+    color: white;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 0 25px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.logo-empresa {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    font-size: 19px;
+    font-weight: bold;
+}
+
+.logo-empresa img {
+    width: 42px;
+    height: 42px;
+    object-fit: contain;
+}
+
+.datos-usuario {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.texto-bienvenida {
+    font-size: 14px;
+}
+
+.btn-cerrar-sesion {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 5px;
+
+    padding: 9px 15px;
+    font-size: 13px;
+    transition: background 0.2s;
+}
+
+.btn-cerrar-sesion:hover {
+    background: #c0392b;
+}
+
+
+/* =========================================
+   CONTENEDOR PRINCIPAL
+========================================= */
+
+.contenedor-principal {
+    display: flex;
+    min-height: calc(100vh - 65px);
+}
+
+
+/* =========================================
+   MENÚ LATERAL
+========================================= */
+
+.menu-lateral {
+    width: 235px;
+    min-width: 235px;
+
+    background: #243447;
+    color: white;
+
+    padding: 20px 12px;
+}
+
+.grupo-menu {
+    margin-bottom: 25px;
+}
+
+.titulo-menu {
+    color: #9fb3c8;
+    font-size: 11px;
+    font-weight: bold;
+    letter-spacing: 1px;
+
+    padding: 8px 12px;
+    margin-bottom: 5px;
+}
+
+.opcion-menu {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    width: 100%;
+    padding: 12px;
+
+    background: transparent;
+    border: none;
+    border-radius: 5px;
+
+    color: #e4eaf0;
+    text-align: left;
+    font-size: 14px;
+
+    transition: all 0.2s;
+}
+
+.opcion-menu:hover {
+    background: #344b63;
+    color: white;
+}
+
+.opcion-menu.activo {
+    background: #2874a6;
+    color: white;
+    font-weight: bold;
+}
+
+.icono-menu {
+    width: 22px;
+    text-align: center;
+    font-size: 16px;
+}
+
+
+/* =========================================
+   CONTENIDO CENTRAL
+========================================= */
+
+.contenido-principal {
+    flex: 1;
+    min-width: 0;
+    padding: 25px;
+}
+
+.encabezado-modulo {
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #dce2e8;
+}
+
+.encabezado-modulo h2 {
+    color: #17365d;
+    font-size: 23px;
+}
+
+.panel-modulo {
+    width: 100%;
+}
+
+
+/* =========================================
+   MENSAJES DE ESTADO
+========================================= */
+
+.mensaje-carga {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    padding: 15px;
+    color: #555;
+}
+
+.indicador-carga {
+    width: 20px;
+    height: 20px;
+
+    border: 3px solid #dce2e8;
+    border-top-color: #2874a6;
+    border-radius: 50%;
+
+    animation: girar 0.8s linear infinite;
+}
+
+@keyframes girar {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.mensaje-error {
+    background: #fdecea;
+    color: #b42318;
+    border: 1px solid #f5c2c0;
+    border-radius: 5px;
+
+    padding: 12px 15px;
+    margin-bottom: 15px;
+}
+
+
+/* =========================================
+   DISEÑO RESPONSIVE
+========================================= */
+
+@media (max-width: 768px) {
+
+    .barra-superior {
+        padding: 0 12px;
+    }
+
+    .logo-empresa span {
+        font-size: 14px;
+    }
+
+    .datos-usuario {
+        gap: 10px;
+    }
+
+    .texto-bienvenida {
+        display: none;
+    }
+
+    .contenedor-principal {
+        flex-direction: column;
+    }
+
+    .menu-lateral {
+        width: 100%;
+        min-width: 0;
+        padding: 10px;
+    }
+
+    .grupo-menu {
+        margin-bottom: 10px;
+    }
+
+    .opcion-menu {
+        display: inline-flex;
+        width: auto;
+        padding: 9px 10px;
+    }
+
+    .contenido-principal {
+        padding: 15px;
+    }
+}

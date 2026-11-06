@@ -1,0 +1,115 @@
+
+<section id="modulo-proveedores">
+
+    <h2>Mantenimiento de proveedores</h2>
+    <p class="subtitulo">Registro, consulta y actualización de proveedores.</p>
+
+    <div class="tarjeta">
+        <h3>{{ form.id ? 'Editar proveedor' : 'Registrar proveedor' }}</h3>
+
+        <form @submit.prevent="guardar">
+
+            <div class="form-grid">
+
+                <div class="campo">
+                    <label>RUC</label>
+                    <input type="text" v-model.trim="form.ruc" required>
+                </div>
+
+                <div class="campo">
+                    <label>Razón social</label>
+                    <input type="text" v-model.trim="form.razonSocial" required>
+                </div>
+
+                <div class="campo">
+                    <label>Teléfono</label>
+                    <input type="text" v-model.trim="form.telefono" required>
+                </div>
+
+                <div class="campo">
+                    <label>Dirección</label>
+                    <input type="text" v-model.trim="form.direccion" required>
+                </div>
+
+                <div class="campo">
+                    <label>ID distrito</label>
+                    <input type="number" min="1" step="1"
+                           v-model.number="form.distritoId" required>
+                </div>
+
+                <div class="campo">
+                    <label>ID provincia</label>
+                    <input type="number" min="1" step="1"
+                           v-model.number="form.provinciaId" required>
+                </div>
+
+                <div class="campo">
+                    <label>ID departamento</label>
+                    <input type="number" min="1" step="1"
+                           v-model.number="form.departamentoId" required>
+                </div>
+
+            </div>
+
+            <div class="acciones">
+                <button type="submit" class="btn-guardar" :disabled="guardando">
+                    {{ guardando ? 'Guardando...' : (form.id ? 'Actualizar' : 'Registrar') }}
+                </button>
+
+                <button type="button" class="btn-limpiar" @click="limpiarFormulario">
+                    Limpiar
+                </button>
+            </div>
+
+        </form>
+    </div>
+
+    <div class="tarjeta">
+        <h3>Listado de proveedores</h3>
+
+        <p v-if="cargando">Consultando proveedores...</p>
+
+        <div class="tabla-contenedor" v-else>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>RUC</th>
+                        <th>Razón social</th>
+                        <th>Teléfono</th>
+                        <th>Dirección</th>
+                        <th>Distrito</th>
+                        <th>Provincia</th>
+                        <th>Departamento</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr v-for="registro in proveedores" :key="registro.id">
+                        <td>{{ registro.id }}</td>
+                        <td>{{ registro.ruc }}</td>
+                        <td>{{ registro.razonSocial }}</td>
+                        <td>{{ registro.telefono }}</td>
+                        <td>{{ registro.direccion }}</td>
+                        <td>{{ registro.distritoId }}</td>
+                        <td>{{ registro.provinciaId }}</td>
+                        <td>{{ registro.departamentoId }}</td>
+                        <td>
+                            <button type="button"
+                                    class="btn-editar"
+                                    @click="editar(registro)">
+                                Editar
+                            </button>
+                        </td>
+                    </tr>
+
+                    <tr v-if="proveedores.length === 0">
+                        <td colspan="9">No hay proveedores registrados.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</section>
