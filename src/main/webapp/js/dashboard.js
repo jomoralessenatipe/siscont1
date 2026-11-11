@@ -1,4 +1,3 @@
-
 const { createApp, ref, nextTick, onMounted } = Vue;
 
 
@@ -45,15 +44,21 @@ const modulos = {
     },
 
     kardex: {
-        titulo: "Kardex",
-        vista: "./vistas/kardex.html",
-        componente: "./vistas/kardex.js"
-    },
-
+	    titulo: "Kardex",
+	    vista: "./vistas/kardex.html",
+	    componente: "./vistas/kardex.js"
+	},
+	
     ventas: {
         titulo: "Registro de ventas",
         vista: "./vistas/ventas.html",
         componente: "./vistas/ventas.js"
+    },
+	
+	contabilidad: {
+	    titulo: "Módulo de Contabilidad",
+	    vista: "./vistas/Contabilidad.html",
+	    componente: "./vistas/contabilidad.js"
     }
 
 };

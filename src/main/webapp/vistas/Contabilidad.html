@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Módulo de Contabilidad</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome para iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-light">
+
+    <div id="app" class="container py-4">
+        
+        <!-- Encabezado del Módulo -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="fw-bold text-dark"><i class="fas fa-book me-2 text-primary"></i>Módulo de Contabilidad</h2>
+            <a href="dashboard.html" class="btn btn-outline-secondary btn-sm">
+                <i class="fas fa-arrow-left me-1"></i> Volver al Menú
+            </a>
+        </div>
+
+        <div class="row g-4">
+            
+            <!-- ========================================== -->
+            <!-- PARTE 1: Formulario de Entrada de Datos    -->
+            <!-- ========================================== -->
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-primary text-white py-3">
+                        <h5 class="mb-0"><i class="fas fa-plus-circle me-2"></i>Nuevo Asiento</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="formContabilidad">
+                            <!-- Cuenta Contable -->
+                            <div class="mb-3">
+                                <label class="form-label text-muted mb-1 fw-semibold">Cuenta Contable</label>
+                                <input type="text" class="form-control" id="cuenta" v-model="form.cuenta" placeholder="Ej. 101, 121..." required>
+                            </div>
+
+                            <!-- Glosa / Descripción -->
+                            <div class="mb-3">
+                                <label class="form-label text-muted mb-1 fw-semibold">Glosa / Descripción</label>
+                                <textarea class="form-control" id="glosa" rows="2" v-model="form.glosa" placeholder="Detalle del movimiento..." required></textarea>
+                            </div>
+
+                            <!-- Importes: Debe y Haber -->
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label text-muted mb-1 fw-semibold">Debe</label>
+                                    <input type="number" step="0.01" class="form-control" id="debe" v-model="form.debe" placeholder="0.00">
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label text-muted mb-1 fw-semibold">Haber</label>
+                                    <input type="number" step="0.01" class="form-control" id="haber" v-model="form.haber" placeholder="0.00">
+                                </div>
+                            </div>
+
+                            <!-- Botón de Registro vinculado a Vue -->
+                            <button type="button" @click="guardar" :disabled="guardando" class="btn btn-primary w-100 py-2 fw-bold shadow-sm">
+                                <span v-if="guardando" class="spinner-border spinner-border-sm me-1" role="status"></span>
+                                <i v-else class="fas fa-save me-1"></i> 
+                                {{ guardando ? 'Guardando...' : 'Registrar Movimiento' }}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div> 
+
+            <!-- ========================================== -->
+            <!-- PARTE 2: Tabla de Listado (Historial)      -->
+            <!-- ========================================== -->
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 text-dark fw-bold"><i class="fas fa-list me-2 text-primary"></i>Historial de Movimientos</h5>
+                        <!-- Botón para refrescar la lista manualmente -->
+                        <button type="button" @click="cargarMovimientos" class="btn btn-sm btn-outline-primary fw-bold">
+                            <i class="fas fa-sync-alt me-1"></i> Actualizar
+                        </button>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="ps-3">ID</th>
+                                        <th>Fecha</th>
+                                        <th>Cuenta</th>
+                                        <th>Glosa</th>
+                                        <th class="text-end">Debe</th>
+                                        <th class="text-end pe-3">Haber</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Estado de carga -->
+                                    <tr v-if="cargando">
+                                        <td colspan="6" class="text-center py-4 text-muted">
+                                            <span class="spinner-border spinner-border-sm me-2" role="status"></span>Cargando registros...
+                                        </td>
+                                    </tr>
+                                    <!-- Si la lista está vacía -->
+                                    <tr v-else-if="movimientos.length === 0">
+                                        <td colspan="6" class="text-center py-4 text-muted">
+                                            No hay movimientos registrados todavía.
+                                        </td>
+                                    </tr>
+                                    <!-- Pintando los valores de la lista con v-for -->
+                                    <tr v-for="m in movimientos" :key="m.id">
+                                        <td class="ps-3 fw-bold">{{ m.id }}</td>
+                                        <td>{{ m.fecha }}</td>
+                                        <td><span class="badge bg-secondary">{{ m.cuenta }}</span></td>
+                                        <td>{{ m.glosa }}</td>
+                                        <td class="text-end text-success fw-semibold">S/ {{ Number(m.debe).toFixed(2) }}</td>
+                                        <td class="text-end text-danger fw-semibold pe-3">S/ {{ Number(m.haber).toFixed(2) }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Vue 3 JS -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- Tu archivo lógico de Vue -->
+    <script src="../js/vistas/contabilidad.js"></script>
+</body>
+</html>

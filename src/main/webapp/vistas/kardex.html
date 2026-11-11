@@ -1,0 +1,128 @@
+<!-- Bootstrap 5 y FontAwesome para que los estilos carguen al inyectarse en el dashboard -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<div class="container py-4">
+    
+    <!-- Encabezado del Módulo -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-dark"><i class="fas fa-boxes me-2 text-primary"></i>Control de Inventario - Kardex</h2>
+    </div>
+
+    <div class="row g-4">
+        
+        <!-- ========================================== -->
+        <!-- PARTE 1: Formulario de Registro            -->
+        <!-- ========================================== -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white py-3">
+                    <h5 class="mb-0"><i class="fas fa-plus-circle me-2"></i>Registrar Movimiento</h5>
+                </div>
+                <div class="card-body">
+                    <form @submit.prevent="guardar">
+                        
+                        <!-- ID Stock -->
+                        <div class="mb-3">
+                            <label class="form-label text-muted mb-1 fw-semibold">ID Stock (Lote)</label>
+                            <input type="number" min="1" class="form-control" v-model.number="form.stockId" placeholder="Ej. 1, 2..." required>
+                        </div>
+
+                        <!-- Tipo de Movimiento -->
+                        <div class="mb-3">
+                            <label class="form-label text-muted mb-1 fw-semibold">Tipo de Movimiento</label>
+                            <select class="form-select" v-model="form.tipoMovimiento" required>
+                                <option value="ENTRADA">ENTRADA (Ingreso)</option>
+                                <option value="SALIDA">SALIDA (Egreso)</option>
+                            </select>
+                        </div>
+
+                        <!-- Cantidad -->
+                        <div class="mb-3">
+                            <label class="form-label text-muted mb-1 fw-semibold">Cantidad</label>
+                            <input type="number" min="1" class="form-control" v-model.number="form.cantidad" placeholder="0" required>
+                        </div>
+
+                        <!-- ID Detalle Comprobante -->
+                        <div class="mb-3">
+                            <label class="form-label text-muted mb-1 fw-semibold">ID Detalle Comprobante</label>
+                            <input type="number" min="1" class="form-control" v-model.number="form.comprobanteDetId" placeholder="Ej. 1" required>
+                        </div>
+
+                        <!-- Motivo / Concepto -->
+                        <div class="mb-3">
+                            <label class="form-label text-muted mb-1 fw-semibold">Motivo / Concepto</label>
+                            <textarea class="form-control" rows="2" v-model.trim="form.motivoMovimiento" placeholder="Ej: Venta según Factura" required></textarea>
+                        </div>
+
+                        <!-- Botón de Registro -->
+                        <button type="submit" :disabled="guardando" class="btn btn-primary w-100 py-2 fw-bold shadow-sm">
+                            <span v-if="guardando" class="spinner-border spinner-border-sm me-1" role="status"></span>
+                            <i v-else class="fas fa-save me-1"></i> 
+                            {{ guardando ? 'Guardando...' : 'Registrar Movimiento' }}
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div> 
+
+        <!-- ========================================== -->
+        <!-- PARTE 2: Tabla de Historial                -->
+        <!-- ========================================== -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 text-dark fw-bold"><i class="fas fa-history me-2 text-primary"></i>Historial de Movimientos</h5>
+                    <!-- Botón para actualizar lista -->
+                    <button type="button" @click="cargarKardexGeneral" class="btn btn-sm btn-outline-primary fw-bold">
+                        <i class="fas fa-sync-alt me-1"></i> Actualizar
+                    </button>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-3">ID</th>
+                                    <th>Stock ID</th>
+                                    <th>Tipo</th>
+                                    <th class="text-center">Cantidad</th>
+                                    <th>Det. Comprobante</th>
+                                    <th class="pe-3">Motivo / Concepto</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Estado de carga -->
+                                <tr v-if="cargando">
+                                    <td colspan="6" class="text-center py-4 text-muted">
+                                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>Cargando movimientos...
+                                    </td>
+                                </tr>
+                                <!-- Si está vacío -->
+                                <tr v-else-if="movimientosKardex.length === 0">
+                                    <td colspan="6" class="text-center py-4 text-muted">
+                                        No hay movimientos registrados en el Kardex.
+                                    </td>
+                                </tr>
+                                <!-- Listado de registros -->
+                                <tr v-for="registro in movimientosKardex" :key="registro.id">
+                                    <td class="ps-3 fw-bold">{{ registro.id }}</td>
+                                    <td><span class="badge bg-secondary">{{ registro.stockId }}</span></td>
+                                    <td>
+                                        <span class="badge" :class="registro.tipoMovimiento === 'ENTRADA' ? 'bg-success' : 'bg-danger'">
+                                            {{ registro.tipoMovimiento }}
+                                        </span>
+                                    </td>
+                                    <td class="text-center fw-semibold">{{ registro.cantidad }}</td>
+                                    <td>{{ registro.comprobanteDetId }}</td>
+                                    <td class="text-muted pe-3">{{ registro.motivoMovimiento }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

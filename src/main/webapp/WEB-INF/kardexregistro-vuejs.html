@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Registro de Kardex - VueJS</title>
+    <!-- Agregamos los estilos del dashboard para que se vea igual que el del profesor -->
+    <link rel="stylesheet" href="css/dashboard.css">
+    <!-- Cargamos Vue.js de forma directa -->
+    <script src="https://jsdelivr.net"></script>
+</head>
+<body>
+
+<div id="modulo-kardex" class="container" style="padding: 20px;">
+
+    <h2>Control de Inventario - Kardex</h2>
+    <p class="subtitulo">Registro, consulta e historial de movimientos de stock.</p>
+
+    <!-- Formulario para Registrar Entrada o Salida -->
+    <div class="tarjeta" style="background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <h3>{{ form.id ? 'Editar movimiento' : 'Registrar movimiento' }}</h3>
+
+        <form @submit.prevent="guardar">
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+
+                <div class="campo">
+                    <label style="display: block; margin-bottom: 5px; font-weight: bold;">ID Stock (Lote / Artículo)</label>
+                    <input type="number" min="1" v-model.number="form.stockId" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                </div>
+
+                <div class="campo">
+                    <label style="display: block; margin-bottom: 5px; font-weight: bold;">Tipo de Movimiento</label>
+                    <select v-model="form.tipoMovimiento" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                        <option value="ENTRADA">ENTRADA (Compra / Ingreso)</option>
+                        <option value="SALIDA">SALIDA (Venta / Egreso)</option>
+                    </select>
+                </div>
+
+                <div class="campo">
+                    <label style="display: block; margin-bottom: 5px; font-weight: bold;">Cantidad</label>
+                    <input type="number" min="1" v-model.number="form.cantidad" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                </div>
+
+                <div class="campo">
+                    <label style="display: block; margin-bottom: 5px; font-weight: bold;">ID Detalle Comprobante</label>
+                    <input type="number" min="1" v-model.number="form.comprobanteDetId" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                </div>
+
+                <div class="campo" style="grid-column: span 2;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: bold;">Motivo / Concepto del Movimiento</label>
+                    <input type="text" v-model.trim="form.motivoMovimiento" placeholder="Ej: Venta según Boleta N-104" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                </div>
+
+            </div>
+
+            <div class="acciones" style="margin-top: 15px; display: flex; gap: 10px;">
+                <button type="submit" class="btn-guardar" :disabled="guardando" style="padding: 10px 20px; background: #28a745; color:#fff; border:none; border-radius:4px; cursor:pointer;">
+                    {{ guardando ? 'Guardando...' : (form.id ? 'Actualizar' : 'Registrar') }}
+                </button>
+
+                <button type="button" class="btn-limpiar" @click="limpiarFormulario" style="padding: 10px 20px; background: #6c757d; color:#fff; border:none; border-radius:4px; cursor:pointer;">
+                    Limpiar
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Buscador Dinámico por Artículo -->
+    <div class="tarjeta" style="background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <h3>Consultar por Stock Específico</h3>
+        <div style="display: flex; gap: 10px; align-items: center; margin-top: 10px;">
+            <input type="number" min="1" v-model.number="stockIdFiltro" placeholder="Ingrese ID de Stock" style="padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
+            <button type="button" @click="filtrarPorStock" style="padding: 8px 15px; background: #007bff; color:#fff; border:none; border-radius:4px; cursor:pointer;">Filtrar</button>
+            <button type="button" @click="cargarKardexGeneral" style="padding: 8px 15px; background: #6c757d; color:#fff; border:none; border-radius:4px; cursor:pointer;">Ver Todo</button>
+        </div>
+    </div>
+
+    <!-- Tabla de Historial -->
+    <div class="tarjeta" style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <h3>Historial de Movimientos registrados</h3>
+
+        <p v-if="cargando">Consultando movimientos del Kardex...</p>
+
+        <div class="tabla-contenedor" v-else>
+            <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                <thead>
+                    <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6; text-align: left;">
+                        <th style="padding: 10px;">ID Movimiento</th>
+                        <th style="padding: 10px;">ID Stock</th>
+                        <th style="padding: 10px;">Tipo</th>
+                        <th style="padding: 10px;">Cantidad</th>
+                        <th style="padding: 10px;">ID Detalle</th>
+                        <th style="padding: 10px;">Motivo / Concepto</th>
+                        <th style="padding: 10px;">Acciones</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr v-for="registro in movimientosKardex" :key="registro.id" style="border-bottom: 1px solid #dee2e6;">
+                        <td style="padding: 10px;">{{ registro.id }}</td>
+                        <td style="padding: 10px;">{{ registro.stockId }}</td>
+                        <td style="padding: 10px;">
+                            <strong :style="{ color: registro.tipoMovimiento === 'ENTRADA' ? '#28a745' : '#dc3545' }">
+                                {{ registro.tipoMovimiento }}
+                            </strong>
+                        </td>
+                        <td style="padding: 10px;">{{ registro.cantidad }}</td>
+                        <td style="padding: 10px;">{{ registro.comprobanteDetId }}</td>
+                        <td style="padding: 10px;">{{ registro.motivoMovimiento }}</td>
+                        <td style="padding: 10px;">
+                            <button type="button" @click="editar(registro)" style="padding: 5px 10px; background: #ffc107; border:none; border-radius:4px; cursor:pointer;">
+                                Editar
+                            </button>
+                        </td>
+                    </tr>
+
+                    <tr v-if="movimientosKardex.length === 0">
+                        <td colspan="7" style="padding: 10px; text-align: center; color: #6c757d;">No hay movimientos registrados en el Kardex.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<script>
+new Vue({
+    el: '#modulo-kardex',
+    data: {
+        form: { id: 0, stockId: '', tipoMovimiento: 'ENTRADA', cantidad: '', comprobanteDetId: '', motivoMovimiento: '' },
+        movimientosKardex: [],
+        stockIdFiltro: '',
+        cargando: false,
+        guardando: false
+    },
+    methods: {
+        cargarKardexGeneral() {
+            this.cargando = true;
+            fetch('KardexJpaServlet')
+                .then(res => res.json())
+                .then(data => {
+                    this.movimientosKardex = data;
+                    this.cargando = false;
+                }).catch(() => this.cargando = false);
+        },
+        filtrarPorStock() {
+            if (!this.stockIdFiltro) return;
+            this.cargando = true;
+            fetch('KardexJpaServlet?stockId=' + this.stockIdFiltro)
+                .then(res => res.json())
+                .then(data => {
+                    this.movimientosKardex = data;
+                    this.cargando = false;
+                }).catch(() => this.cargando = false);
+        },
+        guardar() {
+            this.guardando = true;
+            fetch('KardexJpaServlet', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(this.form)
+            })
+            .then(res => res.json())
+            .then(data => {
+                alert(data.mensaje);
+                this.limpiarFormulario();
+                this.cargarKardexGeneral();
+                this.guardando = false;
+            }).catch(() => this.guardando = false);
+        },
+        editar(reg) {
+            this.form = { ...reg };
+        },
+        limpiarFormulario() {
+            this.form = { id: 0, stockId: '', tipoMovimiento: 'ENTRADA', cantidad: '', comprobanteDetId: '', motivoMovimiento: '' };
+        }
+    },
+    mounted() {
+        this.cargarKardexGeneral();
+    }
+});
+</script>
+
+</body>
+</html>
