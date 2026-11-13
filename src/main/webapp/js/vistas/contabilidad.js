@@ -2,13 +2,25 @@ const { ref, onMounted } = Vue;
 
 export default {
     setup() {
-        // Variables reactivas siguiendo el estándar del proyecto
-        const form = ref({ id: 0, cuenta: '', glosa: '', debe: '', haber: '' });
+        // Objeto de Cabecera (Fecha y Glosa única para todo el asiento)
+        const cabecera = ref({
+            fecha: '',
+            glosa: '',
+            movimientos: []
+        });
+		
+        // Objeto temporal para cada línea que se va agregando
+        const nuevoMovimiento = ref({
+            cuenta: '',
+            debe: 0,
+            haber: 0
+        });
+
         const movimientos = ref([]);
         const cargando = ref(false);
         const guardando = ref(false);
 
-        // Función para listar todos los movimientos contables
+        // Función para listar todos los movimientos contables en la tabla
         async function cargarMovimientos() {
             cargando.value = true;
             try {
@@ -21,59 +33,87 @@ export default {
             }
         }
 
-		// Función para guardar (Registrar movimiento) enviando JSON al Servlet
-		async function guardar() {
-		    // ---> Asegurar que los campos numéricos no vayan vacíos (evita el error 500)
-		    form.value.debe = form.value.debe === '' || isNaN(form.value.debe) ? 0 : parseFloat(form.value.debe);
-		    form.value.haber = form.value.haber === '' || isNaN(form.value.haber) ? 0 : parseFloat(form.value.haber);
+        // Función para agregar una línea de cuenta a la lista temporal
+        function agregarLineaMovimiento() {
+            if (!nuevoMovimiento.value.cuenta) {
+                alert("Por favor, ingrese la cuenta contable.");
+                return;
+            }
 
-		    // ---> Rastreo 1: Verificamos si entra a la función y qué datos lleva
-		    console.log(">>> JS: Entrando a la función guardar(), datos a enviar:", form.value);
+            // Normalizar valores numéricos de Debe y Haber
+            let d = nuevoMovimiento.value.debe === '' || isNaN(nuevoMovimiento.value.debe) ? 0 : parseFloat(nuevoMovimiento.value.debe);
+            let h = nuevoMovimiento.value.haber === '' || isNaN(nuevoMovimiento.value.haber) ? 0 : parseFloat(nuevoMovimiento.value.haber);
 
-		    if (!form.value.cuenta || !form.value.glosa) {
-		        alert("Por favor, complete la cuenta y la glosa.");
-		        return;
-		    }
+            if (d === 0 && h === 0) {
+                alert("Debe ingresar un monto en el Debe o en el Haber.");
+                return;
+            }
 
-		    guardando.value = true;
-		    try {
-		        // ---> Rastreo 2: Antes de disparar el fetch al Servlet
-		        console.log(">>> JS: Disparando fetch hacia ContabilidadServlet...");
+            // Añadir copia de la línea a la lista de movimientos de la cabecera
+            cabecera.value.movimientos.push({
+                cuenta: nuevoMovimiento.value.cuenta,
+                debe: d,
+                haber: h
+            });
 
-		        const res = await fetch('ContabilidadServlet', {
-		            method: 'POST',
-		            headers: { 'Content-Type': 'application/json' },
-		            body: JSON.stringify(form.value)
-		        });
-		        
-		        // ---> Rastreo 3: Verificando la respuesta del servidor
-		        console.log(">>> JS: Respuesta recibida del servidor, status:", res.status);
+            // Limpiar campos de la línea actual pero mantener la glosa y fecha
+            nuevoMovimiento.value = { cuenta: '', debe: 0, haber: 0 };
+        }
 
-		        // Si el servidor da error 500, capturamos el texto para ver qué falló exactamente
-		        if (!res.ok) {
-		            throw new Error(`Servidor respondió con código ${res.status}`);
-		        }
+        // Función para quitar una línea de la tabla temporal
+        function quitarLineaMovimiento(index) {
+            cabecera.value.movimientos.splice(index, 1);
+        }
 
-		        const data = await res.json().catch(() => ({ mensaje: "Movimiento registrado con éxito" }));
-		        alert(data.mensaje || "Registrado correctamente");
-		        
-		        limpiarFormulario();
-		        await cargarMovimientos();
-		    } catch (e) {
-		        // ---> Rastreo si hay error en el fetch
-		        console.error(">>> JS ERROR: Error al conectar con el servidor:", e);
-		        alert("Error al registrar en el servidor (Revisa la consola de Java).");
-		    } finally {
-		        guardando.value = false;
-		    }
-		}
+        // Función para enviar todo el asiento completo (Cabecera + Detalles) al Servlet
+        async function guardarAsientoCompleto() {
+            if (!cabecera.value.fecha || !cabecera.value.glosa) {
+                alert("Por favor, complete la fecha y la glosa general del asiento.");
+                return;
+            }
 
-        function editar(registro) {
-            form.value = { ...registro };
+            if (cabecera.value.movimientos.length === 0) {
+                alert("Debe agregar al menos una cuenta en los movimientos.");
+                return;
+            }
+
+            console.log(">>> JS: Enviando asiento completo con cabecera y detalles:", cabecera.value);
+
+            guardando.value = true;
+            try {
+                const res = await fetch('ContabilidadServlet', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(cabecera.value)
+                });
+                
+                console.log(">>> JS: Respuesta recibida del servidor, status:", res.status);
+
+                if (!res.ok) {
+                    throw new Error(`Servidor respondió con código ${res.status}`);
+                }
+
+                const data = await res.json().catch(() => ({ mensaje: "Asiento registrado con éxito" }));
+                alert(data.mensaje || "Registrado correctamente");
+                
+                // Limpiar todo el formulario
+                limpiarFormulario();
+                await cargarMovimientos();
+            } catch (e) {
+                console.error(">>> JS ERROR: Error al conectar con el servidor:", e);
+                alert("Error al registrar en el servidor (Revisa la consola de Java).");
+            } finally {
+                guardando.value = false;
+            }
         }
 
         function limpiarFormulario() {
-            form.value = { id: 0, cuenta: '', glosa: '', debe: '', haber: '' };
+            cabecera.value = {
+                fecha: '',
+                glosa: '',
+                movimientos: []
+            };
+            nuevoMovimiento.value = { cuenta: '', debe: 0, haber: 0 };
         }
 
         // Al iniciar el componente, carga los datos automáticamente
@@ -82,13 +122,15 @@ export default {
         });
 
         return {
-            form,
+            cabecera,
+            nuevoMovimiento,
             movimientos,
             cargando,
             guardando,
             cargarMovimientos,
-            guardar,
-            editar,
+            agregarLineaMovimiento,
+            quitarLineaMovimiento,
+            guardarAsientoCompleto,
             limpiarFormulario
         };
     }
