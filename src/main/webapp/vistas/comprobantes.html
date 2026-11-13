@@ -1,0 +1,156 @@
+<section id="modulo-comprobantes">
+
+    <h2>Registro de comprobantes de pago</h2>
+
+    <p class="subtitulo">
+        Registro de ventas y detalle de productos.
+    </p>
+
+    <div class="tarjeta">
+
+        <h3>Datos de la venta</h3>
+
+        <div class="form-grid">
+
+            <div class="campo">
+                <label>ID Cliente</label>
+                <input type="number"
+                       min="1"
+                       v-model.number="form.clienteId">
+            </div>
+
+            <div class="campo">
+                <label>ID Vendedor</label>
+                <input type="number"
+                       min="1"
+                       v-model.number="form.vendedorId">
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="tarjeta">
+
+        <h3>Detalle de productos</h3>
+
+        <div class="form-grid">
+
+            <div class="campo">
+                <label>ID Producto</label>
+                <input type="number"
+                       min="1"
+                       v-model.number="detalle.productoId">
+            </div>
+
+            <div class="campo">
+                <label>Cantidad</label>
+                <input type="number"
+                       min="0.01"
+                       step="0.01"
+                       v-model.number="detalle.cantidad">
+            </div>
+
+            <div class="campo">
+                <label>Precio unitario</label>
+                <input type="number"
+                       min="0.01"
+                       step="0.01"
+                       v-model.number="detalle.precioUnitario">
+            </div>
+
+        </div>
+
+        <div class="acciones">
+
+            <button type="button"
+                    class="btn-guardar"
+                    @click="agregarDetalle">
+
+                Agregar producto
+
+            </button>
+
+        </div>
+
+        <div class="tabla-contenedor"
+             v-if="form.detalles.length > 0">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Cantidad</th>
+                        <th>Precio unitario</th>
+                        <th>Subtotal</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    <tr v-for="(item, index) in form.detalles"
+                        :key="index">
+
+                        <td>{{ item.productoId }}</td>
+
+                        <td>{{ item.cantidad }}</td>
+
+                        <td>{{ item.precioUnitario }}</td>
+
+                        <td>
+                            {{
+                                item.cantidad *
+                                item.precioUnitario
+                            }}
+                        </td>
+
+                        <td>
+
+                            <button type="button"
+                                    class="btn-editar"
+                                    @click="eliminarDetalle(index)">
+
+                                Quitar
+
+                            </button>
+
+                        </td>
+
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+    <div class="tarjeta">
+
+        <h3>Resumen</h3>
+
+        <p>Total neto: {{ totalNeto }}</p>
+
+        <p>IGV (18%): {{ igv }}</p>
+
+        <p><strong>Total: {{ total }}</strong></p>
+
+        <div class="acciones">
+
+            <button type="button"
+                    class="btn-guardar"
+                    :disabled="guardando"
+                    @click="guardar">
+
+                {{ guardando ? 'Guardando...' : 'Registrar venta' }}
+
+            </button>
+
+        </div>
+
+    </div>
+
+</section>
